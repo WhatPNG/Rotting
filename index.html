@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title></title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    body {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      font-family: "Times New Roman", Times, serif;
+    }
+    #flash {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: #000;
+      pointer-events: none;
+    }
+    #message {
+      position: relative;
+      z-index: 1;
+      color: #390000;
+      font-size: 11px;
+      font-weight: normal;
+      text-align: center;
+      padding: 1rem;
+      letter-spacing: 0;
+      user-select: none;
+    }
+    #start {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      background: #000;
+      color: #390000;
+      font: 11px "Times New Roman", Times, serif;
+      cursor: pointer;
+      border: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+    #start:focus-visible { outline: 1px solid #390000; outline-offset: -8px; }
+    #start span { animation: breathe 2.8s ease-in-out infinite; }
+    @keyframes breathe {
+      0%, 100% { opacity: .45; }
+      50% { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #start span { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="flash" aria-hidden="true"></div>
+  <main id="message">What will become of the lost herd of sheep?</main>
+  <audio id="ambience" src="ambience.mp3" loop preload="auto"></audio>
+  <button id="start" type="button" aria-label="Enter the experience">
+    <span>click to continue</span>
+  </button>
+  <script>
+    (() => {
+      const flash = document.getElementById("flash");
+      const start = document.getElementById("start");
+      const audio = document.getElementById("ambience");
+      const message = document.getElementById("message");
+      let flashTimer = null;
+
+      // Very brief, dim gray pulses with irregular pauses.
+      function pulse() {
+        const shade = Math.random() < 0.7 ? 9 : 13;
+        flash.style.backgroundColor = `rgb(${shade}, ${shade}, ${shade})`;
+        setTimeout(() => { flash.style.backgroundColor = "#000"; }, 35 + Math.random() * 45);
+        flashTimer = setTimeout(pulse, 100 + Math.random() * 380);
+      }
+
+      start.addEventListener("click", async () => {
+        start.remove();
+        pulse();
+        try {
+          audio.volume = 0.45;
+          await audio.play();
+        } catch (err) {
+          // The visual experience still works if the audio file is missing or blocked.
+          message.title = "Add ambience.mp3 beside index.html to enable audio.";
+        }
+      });
+
+      // Honor reduced-motion settings by avoiding the flashing effect.
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        start.addEventListener("click", () => {
+          if (flashTimer) clearTimeout(flashTimer);
+          flash.style.backgroundColor = "#000";
+        }, { once: true });
+      }
+    })();
+  </script>
+</body>
+</html>
